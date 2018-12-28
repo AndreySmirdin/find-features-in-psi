@@ -42,9 +42,19 @@ object Runner {
     fun run(structuresPath: String, structureVectorsPath: String) {
         val timeLogger = TimeLogger(task_name = "N-gram extraction")
 
-        try {
-            findFeatures(structuresPath, structureVectorsPath);
+        val data = """
+            |{
+            |   "type": "IF",
+            |   "min": 5,
+            |   "children": [{
+            |       "type": "TRY",
+            |       "min": 3
+            |       }
+            |   ]}
+            |}""".trimMargin()
 
+        try {
+            findFeatures(structuresPath, structureVectorsPath, data);
         } catch (e: Exception) {
             println("EXCEPTION: $e")
         }
@@ -52,7 +62,7 @@ object Runner {
         timeLogger.finish(fullFinish = true)
     }
 
-    private fun findFeatures(treesPath: String, treeVectorsPath: String) {
+    private fun findFeatures(treesPath: String, treeVectorsPath: String, pattern: String) {
         val treeReference = object : TypeReference<ArrayList<Tree>>() {}
         val featureFinder = FeatureFinder()
         //val additionalFileCheck = { file: File -> checkAlreadyExist(file, treesPath, treeVectorsPath) }
@@ -64,7 +74,7 @@ object Runner {
                 return@run
             }
             println("(${FilesCounter.counter} out of $TOTAL_FILES) $file")
-            val trees = featureFinder.findIfs(content)
+            val trees = featureFinder.findIfs(content, pattern)
             for ((i, tree) in trees.withIndex()) {
                 val newName = file.name.substringBefore('.') + "_" + i + ".kt.json"
                 val list = ArrayList<Tree>()
