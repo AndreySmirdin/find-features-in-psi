@@ -1,13 +1,13 @@
 package ru.hse.spb.structures
 
-import jdk.nashorn.internal.ir.annotations.Ignore
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 class Tree : AbstractNode() {
     override val type: String = ""
 
     val children: ArrayList<out Tree>? = null
 
-    @Ignore
+    @JsonIgnore
     var patternMatch: PatternTree? = null
 
     fun updateWithChildren() {
@@ -18,7 +18,11 @@ class Tree : AbstractNode() {
             childStats.add(ArrayList())
             children[child].patternMatch?.collectValuesToArray(childStats[child])
         }
+        patternMatch?.parallelDfs(0, childStats)
     }
 
-
+    @JsonIgnore
+    fun isGood(): Boolean {
+        return patternMatch?.current!! >= patternMatch?.min!!
+    }
 }

@@ -44,13 +44,8 @@ object Runner {
 
         val data = """
             |{
-            |   "type": "IF",
-            |   "min": 5,
-            |   "children": [{
-            |       "type": "TRY",
-            |       "min": 3
-            |       }
-            |   ]}
+            |   "type": "when",
+            |   "min": 1
             |}""".trimMargin()
 
         try {
@@ -64,7 +59,7 @@ object Runner {
 
     private fun findFeatures(treesPath: String, treeVectorsPath: String, pattern: String) {
         val treeReference = object : TypeReference<ArrayList<Tree>>() {}
-        val featureFinder = FeatureFinder()
+        val featureFinder = FeatureFinder(pattern)
         //val additionalFileCheck = { file: File -> checkAlreadyExist(file, treesPath, treeVectorsPath) }
 
         JsonFilesReader<ArrayList<Tree>>(treesPath, ".json", treeReference).run { content: ArrayList<Tree>, file: File ->
@@ -74,7 +69,7 @@ object Runner {
                 return@run
             }
             println("(${FilesCounter.counter} out of $TOTAL_FILES) $file")
-            val trees = featureFinder.findIfs(content, pattern)
+            val trees = featureFinder.findSubtrees(content)
             for ((i, tree) in trees.withIndex()) {
                 val newName = file.name.substringBefore('.') + "_" + i + ".kt.json"
                 val list = ArrayList<Tree>()

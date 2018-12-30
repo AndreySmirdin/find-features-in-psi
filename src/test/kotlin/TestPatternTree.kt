@@ -32,7 +32,7 @@ class TestPatternTree {
     private fun runTest(valNumber: Int, expected: Int) {
         val tree = jacksonObjectMapper().readValue<Tree>(jsonTree)
 
-        FeatureFinder().dfs(listOf(tree), """
+        FeatureFinder("""
             |{
             |   "type": "if",
             |   "min": 2,
@@ -41,7 +41,7 @@ class TestPatternTree {
             |       "min": $valNumber
             |       }
             |   ]}
-            |}""".trimMargin())
+            |}""".trimMargin()).dfs(listOf(tree))
         assertThat(tree.patternMatch?.current, `is`(expected))
     }
 }

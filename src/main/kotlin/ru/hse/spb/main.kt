@@ -1,5 +1,8 @@
 package ru.hse.spb
 
+import java.io.File
+
 fun main(args: Array<String>) {
-    Runner.run("../DataSet/Dataset_part3_2", "../Dir")
+    File("../Dir").deleteRecursively()
+    Runner.run("../DataSet", "../Dir")
 }

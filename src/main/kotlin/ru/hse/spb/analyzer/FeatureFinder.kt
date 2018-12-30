@@ -2,48 +2,61 @@ package ru.hse.spb.analyzer
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import ru.hse.spb.structures.PatternTree
 import ru.hse.spb.structures.Tree
 import java.util.*
 import kotlin.collections.ArrayList
 
-class FeatureFinder {
+class FeatureFinder(pattern: String) {
 
     var list: ArrayList<Tree> = ArrayList()
 
     val nodes: SortedSet<String> = TreeSet()
 
-    fun countVars(content: List<Tree>): Int {
-//        var result = 0
-//        for (node: Tree in content) {
-//            //println(node.type)
-//            nodes += node.type
-//            if (node.type == "PROPERTY" || node.type == "VAR") {
-//                node.vars = 1;
-//            }
-//            else if (node.children != null) {
-//                node.vars += countVars(node.children)
-//            }
-//            result += node.vars
-//        }
-//        return result
-        return 0
+    val patternTree: PatternTree = jacksonObjectMapper().readValue(pattern)
+
+    private fun chooseSubtrees(content: List<Tree>) {
+        for (node in content) {
+//            if (node.patternMatch?.current == 1)
+//                print("fdsf")
+            if (!node.isGood())
+                continue
+            if (!hasSuitable(node.children)) {
+                list.add(node)
+            } else if (node.children != null) {
+                chooseSubtrees(node.children)
+            }
+        }
     }
 
-    fun dfs(content: List<Tree>, pattern: String) {
+    private fun hasSuitable(list: ArrayList<out Tree>?): Boolean {
+        if (list == null)
+            return false
+        for (node in list) {
+            if (node.isGood())
+                return true
+        }
+        return false
+    }
+
+    fun dfs(content: List<Tree>) {
         for (node: Tree in content) {
-            node.patternMatch = jacksonObjectMapper().readValue(pattern)
+            node.patternMatch = patternTree.createCopy()
+            nodes.add(node.type)
             if (node.children != null) {
-                dfs(node.children, pattern)
+                dfs(node.children)
                 node.updateWithChildren()
             }
             node.patternMatch?.updateWithType(node.type)
         }
     }
 
-    fun findIfs(content: ArrayList<out Tree>, pattern: String): ArrayList<Tree> {
+    fun findSubtrees(content: ArrayList<out Tree>): ArrayList<Tree> {
         list.clear()
-        countVars(content)
-        dfs(content, pattern)
+        dfs(content)
+        chooseSubtrees(content)
+        if (list.size > 0)
+            println("Yey, boooooy")
         return list
     }
 }
