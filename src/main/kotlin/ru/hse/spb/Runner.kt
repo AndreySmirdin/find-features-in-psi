@@ -7,46 +7,17 @@ import ru.hse.spb.io.FileWriter
 import ru.hse.spb.io.JsonFilesReader
 import ru.hse.spb.structures.Tree
 import java.io.File
-import java.nio.file.Files
-
-enum class StructureType {
-    TREE, LIST
-}
 
 object FilesCounter {
     var counter = 0
 }
 
 object Runner {
-    private const val TOTAL_FILES = 880593
+    fun run(structuresPath: String, structureVectorsPath: String, patternPath: String) {
+        val timeLogger = TimeLogger(task_name = "Feature extraction")
 
-//    private fun writeGeneratedNgrams(ngramGenerator: NgramGenerator) {
-//        val writeTimeLogger = TimeLogger(task_name = "N-grams write")
-//        FileWriter.write(ALL_NGRAMS_FILE_PATH, ngramGenerator.allNgrams)
-//        writeTimeLogger.finish()
-//    }
-
-    private fun checkAlreadyExist(file: File, dirPath: String, targetDirPath: String): Boolean {
-        val relativePath = file.relativeTo(File(dirPath))
-        val outputPath = File("$targetDirPath/$relativePath")
-        val fileExist = Files.exists(outputPath.toPath())
-
-        if (fileExist) {
-            FilesCounter.counter++
-            println("SKIP: PSI ALREADY FACTORIZED (${FilesCounter.counter} out of $TOTAL_FILES)")
-        }
-
-        return fileExist
-    }
-
-    fun run(structuresPath: String, structureVectorsPath: String) {
-        val timeLogger = TimeLogger(task_name = "N-gram extraction")
-
-        val data = """
-            |{
-            |   "type": "when",
-            |   "min": 1
-            |}""".trimMargin()
+        val file = File(patternPath)
+        val data = file.readText()
 
         try {
             findFeatures(structuresPath, structureVectorsPath, data);
@@ -60,15 +31,14 @@ object Runner {
     private fun findFeatures(treesPath: String, treeVectorsPath: String, pattern: String) {
         val treeReference = object : TypeReference<ArrayList<Tree>>() {}
         val featureFinder = FeatureFinder(pattern)
-        //val additionalFileCheck = { file: File -> checkAlreadyExist(file, treesPath, treeVectorsPath) }
 
         JsonFilesReader<ArrayList<Tree>>(treesPath, ".json", treeReference).run { content: ArrayList<Tree>, file: File ->
             FilesCounter.counter++
             if (content.size == 0) {
-                println("SKIP: EMPTY PSI FILE (${FilesCounter.counter} out of $TOTAL_FILES)")
+                println("SKIP: EMPTY PSI FILE (${FilesCounter.counter})")
                 return@run
             }
-            println("(${FilesCounter.counter} out of $TOTAL_FILES) $file")
+            println("(${FilesCounter.counter}) $file")
             val trees = featureFinder.findSubtrees(content)
             for ((i, tree) in trees.withIndex()) {
                 val newName = file.name.substringBefore('.') + "_" + i + ".kt.json"
@@ -76,10 +46,6 @@ object Runner {
                 list.add(tree)
                 FileWriter.write(file, treesPath, treeVectorsPath, list, newName);
             }
-        }
-
-        for (a in featureFinder.nodes) {
-            println(a)
         }
     }
 }

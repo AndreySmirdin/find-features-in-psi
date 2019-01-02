@@ -1,7 +1,7 @@
 package ru.hse.spb.structures
 
 class PatternTree(val min: Int, override val type: String) : AbstractNode() {
-    val children: ArrayList<PatternTree> = ArrayList()
+    private val children: ArrayList<PatternTree> = ArrayList()
 
     var current: Int = 0
 
