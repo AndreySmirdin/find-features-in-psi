@@ -1,15 +1,11 @@
 package ru.hse.spb.analyzer
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import ru.hse.spb.structures.PatternTree
 import ru.hse.spb.structures.Tree
 
-class FeatureFinder(pattern: String) {
+class FeatureFinder(val patternTree: PatternTree) {
 
     var list: ArrayList<Tree> = ArrayList()
-
-    private val patternTree: PatternTree = jacksonObjectMapper().readValue(pattern)
 
     private fun chooseSubtrees(content: List<Tree>) {
         for (node in content) {
